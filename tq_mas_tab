@@ -1,0 +1,73 @@
+DECLARE
+    v_account_number VARCHAR2(20);
+    v_transaction_type VARCHAR2(20);
+    v_channel VARCHAR2(20);
+    v_status VARCHAR2(20);
+    v_amount NUMBER(15,2);
+    v_balance NUMBER(15,2);
+BEGIN
+
+    FOR i IN 1..100000 LOOP
+
+        -- Generate account number
+        v_account_number := 'ACC' || LPAD(i, 12, '0');
+
+        -- Random transaction type
+        IF MOD(i, 2) = 0 THEN
+            v_transaction_type := 'CREDIT';
+        ELSE
+            v_transaction_type := 'DEBIT';
+        END IF;
+
+        -- Random transaction amount
+        v_amount := ROUND(DBMS_RANDOM.VALUE(100, 100000), 2);
+
+        -- Random balance
+        v_balance := ROUND(DBMS_RANDOM.VALUE(1000, 500000), 2);
+
+        -- Transaction channel
+        CASE MOD(i, 4)
+            WHEN 0 THEN v_channel := 'ATM';
+            WHEN 1 THEN v_channel := 'ONLINE';
+            WHEN 2 THEN v_channel := 'MOBILE';
+            ELSE v_channel := 'BRANCH';
+        END CASE;
+
+        -- Transaction status
+        IF MOD(i, 10) = 0 THEN
+            v_status := 'FAILED';
+        ELSE
+            v_status := 'SUCCESS';
+        END IF;
+
+        INSERT INTO BANK_TRANSACTIONS (
+            TRANSACTION_ID,
+            ACCOUNT_NUMBER,
+            TRANSACTION_DATE,
+            TRANSACTION_TYPE,
+            AMOUNT,
+            BALANCE,
+            CHANNEL,
+            BRANCH_CODE,
+            STATUS
+        )
+        VALUES (
+            i,
+            v_account_number,
+            DATE '2025-01-01' + TRUNC(DBMS_RANDOM.VALUE(0, 730)),
+            v_transaction_type,
+            v_amount,
+            v_balance,
+            v_channel,
+            'BR' || LPAD(MOD(i, 1000) + 1, 4, '0'),
+            v_status
+        );
+
+    END LOOP;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('100,000 records inserted successfully.');
+
+END;
+/
